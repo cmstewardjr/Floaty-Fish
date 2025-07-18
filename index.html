@@ -7,34 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; padding: 0; background-color: #0d1b2a; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Bungee', cursive; color: white; overflow: hidden; touch-action: manipulation; }
-        #game-container {
-            position: relative;
-            overflow: hidden;
-            border: 3px solid #FFF;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            background-color: #000;
-            aspect-ratio: 480 / 640;
-            width: 95vw;
-            max-height: 95vh;
-        }
+        #game-container { position: relative; overflow: hidden; border: 3px solid #FFF; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); background-color: #000; aspect-ratio: 480 / 640; width: 95vw; max-height: 95vh; }
         @media (min-width: 1024px) { #game-container { max-width: 500px; max-height: 90vh; } }
         @media (orientation: landscape) { #game-container { height: 95vh; width: auto; } }
-
-        #dashboard {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 80px; 
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 15;
-            display: none; 
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 5px;
-            box-sizing: border-box;
-        }
+        #dashboard { position: absolute; top: 0; left: 0; width: 100%; height: 80px; background-color: rgba(0, 0, 0, 0.5); z-index: 15; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box; }
         #dashboard-top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 15px; box-sizing: border-box; }
         #score-display { font-size: 1.8rem; text-shadow: 2px 2px 3px #000; }
         #lives-display { display: flex; gap: 5px; }
@@ -43,17 +19,7 @@
         #dashboard-level-name { font-size: 0.8rem; margin-bottom: 3px; }
         #progress-bar-container { width: 100%; height: 12px; background-color: rgba(0, 0, 0, 0.5); border: 1px solid white; border-radius: 10px; }
         #progress-bar { width: 0%; height: 100%; background-color: #ffde59; border-radius: 8px; transition: width 0.1s linear; }
-
-        canvas {
-            display: block;
-            position: absolute;
-            top: 80px; 
-            left: 0;
-            width: 100%;
-            height: calc(100% - 80px); 
-            z-index: 1;
-            /* --- CHANGE: Removed all image-rendering properties --- */
-        }
+        canvas { display: block; position: absolute; top: 80px; left: 0; width: 100%; height: calc(100% - 80px); z-index: 1; }
         .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; text-shadow: 2px 2px 4px #000000; z-index: 10; padding: 20px; box-sizing: border-box; }
         #loading-screen, #how-to-play-screen, #main-menu, #game-over-screen, #fish-selection-modal, #life-lost-screen, #level-start-screen { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); }
         h1 { font-size: 3rem; margin-bottom: 10px; line-height: 1.1; color: #ffde59; }
@@ -72,25 +38,16 @@
         .fish-option.unlocked:hover { border-color: #ffde59; transform: scale(1.1); }
         .fish-option.locked { cursor: not-allowed; }
         .fish-option.selected { border-color: #4ecdc4; box-shadow: 0 0 15px #4ecdc4; }
-        .fish-option img { width: 100px; height: 100px; object-fit: contain; margin-bottom: 5px; /* --- CHANGE: Removed image-rendering --- */ }
+        .fish-option img { width: 100px; height: 100px; object-fit: contain; margin-bottom: 5px; }
         .fish-option span { font-size: 0.8rem; }
-        #level-start-obstacle-img { width: 120px; height: 120px; margin: 15px 0; /* --- CHANGE: Removed image-rendering --- */ }
+        #level-start-obstacle-img { width: 120px; height: 120px; margin: 15px 0; }
         #level-start-lives { display: flex; gap: 8px; }
         #level-start-lives img { width: 40px; height: 40px; }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div id="dashboard">
-            <div id="dashboard-top-row">
-                <div id="score-display">0</div>
-                <div id="lives-display"></div>
-            </div>
-            <div id="dashboard-level-info">
-                <div id="dashboard-level-name">Tangle Reef</div>
-                <div id="progress-bar-container"><div id="progress-bar"></div></div>
-            </div>
-        </div>
+        <div id="dashboard"><div id="dashboard-top-row"><div id="score-display">0</div><div id="lives-display"></div></div><div id="dashboard-level-info"><div id="dashboard-level-name">Tangle Reef</div><div id="progress-bar-container"><div id="progress-bar"></div></div></div></div>
         <canvas id="game-canvas"></canvas>
         <div id="loading-screen" class="ui-overlay"><h1>Loading Adventure</h1><p id="loading-progress">0%</p></div>
         <div id="how-to-play-screen" class="ui-overlay" style="display: none;"><h1>How to Play</h1><p>Tap or [SPACE] to swim up. Avoid everything!</p><p>You have 3 lives per level. Good luck!</p><button id="close-how-to-play-button" class="button">Let's Go!</button></div>
@@ -105,11 +62,26 @@
 <script>
 window.addEventListener('DOMContentLoaded', () => {
     let canvas, ctx, gameContainer, mainMenu, gameOverScreen, fishSelectionModal, dashboard, scoreDisplay, progressBar, perfectPassText, finalScoreDisplay, bestScoreDisplay, startGameButton, restartButton, homeButton, fishButton, closeFishModalButton, fishGrid, loadingScreen, loadingProgress, howToPlayScreen, closeHowToPlayButton, lifeLostScreen, continueButton, livesDisplay, livesRemainingDisplay, levelStartScreen, levelStartName, levelStartObstacleImg, levelStartLives, beginLevelButton, mainMenuBestScore, dashboardLevelName;
-    let gameState = 'loading';
+    
+    // --- CHANGE: Added 'resuming' state for invulnerability period ---
+    let gameState = 'loading'; // loading, menu, level-start, playing, resuming, dying, life-lost, game-over
+    
     let lives = 3; let score = 0; let bestScore = localStorage.getItem('floatyFishBestScore') || 0; let frame = 0; let survivalTime = 0; let currentLevelIndex = 0; let vortexMode = false; let survivalScoreInterval; let animationFrameId;
     let obstaclesArray = [], jellyfishArray = [], rockArray = [], icebergArray = [];
     const ASSETS = { fish_default: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/coral%20orange%20fish.png', fish_kelp_green: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/kelp%20green%20fish.png', fish_deep_blue: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/deep%20ocean%20blue%20fish.png', fish_sea_lion_tan: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Sealion%20Tan%20Fish.png', fish_polkadot: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Polkadot%20Party%20Fish.png', fish_shark_grey: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Shark%20Grey%20Fish.png', fish_inky_black: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Inky%20Black%20Fish.png', fish_orca_mono: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Orca%20Monochrome%20Fish.png', fish_bioluminescent: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Bioluminescent%20Fish.png', fish_locked: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Unlock-Fish.png', octopus: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Octopus.png', dolphin: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Dolphin.png', seal: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Seal.png', sea_lion: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Sea%20Lion.png', jellyfish: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Jellyfish%201.png', shark: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Shark.png', squid: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/SQUID.png', orca: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Orca.png', lantern_fish: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/Lantern%20Fish.png', yellow_rock_1: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/yellow-rock-1.png', yellow_rock_2: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/yellow-rock-2.png', red_rock_1: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/red-rock-1.png', blue_rock_1: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/blue-rock-1.png', blue_rock_2: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/blue-rock-2.png', orange_rock_1: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/orange-rock-1.png', orange_rock_2: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/orange-rock-2.png', iceberg_1: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/iceberg-1.png', iceberg_2: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/iceberg-2.png', iceberg_3: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/iceberg-3.png', iceberg_4: 'https://raw.githubusercontent.com/cmstewardjr/Floaty-Fish/main/iceberg-4.png', };
-    const gameConfig = { gravity: 0.4, lift: -9, gameSpeed: 2, topBoundary: 0, bottomBoundary: 0, perfectPassTolerance: 20, vortexSpeedMultiplier: 1.5, sandyBottomHeight: 50 };
+    
+    // --- CHANGE: Adjusted physics values for a smoother experience ---
+    const gameConfig = { 
+        gravity: 0.22,      // Lower gravity for more "floaty" feel
+        lift: -6.5,         // Gentler lift to match lower gravity
+        gameSpeed: 3,       // Faster forward progression
+        topBoundary: 0, 
+        bottomBoundary: 0, 
+        perfectPassTolerance: 20, 
+        vortexSpeedMultiplier: 1.5, 
+        sandyBottomHeight: 50 
+    };
+
     const LEVELS = [ { name: 'Tangle Reef', duration: 30, bgColor: 'linear-gradient(to bottom, #1dd1a1, #138d75)', obstacleImg: 'octopus', obstacleScore: 100, speedMultiplier: 1.2, gap: 220, obstacleWidth: 100, movement: 'bobbing', floorObstacleTypes: ['yellow_rock_1', 'yellow_rock_2'] }, { name: 'Dolphin Bay', duration: 30, bgColor: 'linear-gradient(to bottom, #00c6ff, #0072ff)', obstacleImg: 'dolphin', obstacleScore: 50, speedMultiplier: 1.0, gap: 240, obstacleWidth: 110, movement: 'straight' }, { name: 'Seal Rock', duration: 30, bgColor: 'linear-gradient(to bottom, #a8c0ff, #3f2b96)', obstacleImg: 'seal', obstacleScore: 75, speedMultiplier: 1.1, gap: 230, obstacleWidth: 105, movement: 'straight', topObstacleTypes: ['iceberg_1', 'iceberg_3'] }, { name: 'Sea Lion Cove', duration: 30, bgColor: 'linear-gradient(to bottom, #f7b733, #fc4a1a)', obstacleImg: 'sea_lion', obstacleScore: 115, speedMultiplier: 1.4, gap: 210, obstacleWidth: 115, movement: 'bobbing', floorObstacleTypes: ['red_rock_1', 'orange_rock_1'] }, { name: 'Jellyfish Fields', duration: 30, bgColor: 'linear-gradient(to bottom, #4e54c8, #8f94fb)', survivalScore: 200, speedMultiplier: 1.0 }, { name: 'Shark Shallows', duration: 30, bgColor: 'linear-gradient(to bottom, #0f2027, #2c5364)', obstacleImg: 'shark', obstacleScore: 125, speedMultiplier: 1.5, gap: 220, obstacleWidth: 130, movement: 'straight', floorObstacleTypes: ['orange_rock_1', 'orange_rock_2'] }, { name: 'Squid Ink Spire', duration: 30, bgColor: 'linear-gradient(to bottom, #4A5568, #2D3748)', obstacleImg: 'squid', obstacleScore: 150, speedMultiplier: 1.3, gap: 215, obstacleWidth: 100, movement: 'jetting', floorObstacleTypes: ['yellow_rock_1', 'red_rock_1'] }, { name: 'Orca Trench', duration: 30, bgColor: 'linear-gradient(to bottom, #141E30, #243B55)', obstacleImg: 'orca', obstacleScore: 200, speedMultiplier: 1.8, gap: 250, obstacleWidth: 150, movement: 'straight', topObstacleTypes: ['iceberg_2', 'iceberg_4'] }, { name: 'Abyssal Zone', duration: 30, bgColor: 'linear-gradient(to bottom, #000000, #150821)', obstacleImg: 'lantern_fish', obstacleScore: 250, speedMultiplier: 1.4, gap: 220, obstacleWidth: 110, movement: 'bobbing' }, ];
     const TOTAL_CYCLE_TIME = LEVELS.reduce((acc, level) => acc + level.duration, 0);
     const SKINS = [ { id: 'fish_default', name: 'Coral Orange', unlockLevel: 0 }, { id: 'fish_kelp_green', name: 'Kelp Green', unlockLevel: 1 }, { id: 'fish_deep_blue', name: 'Deep Ocean Blue', unlockLevel: 2 }, { id: 'fish_sea_lion_tan', name: 'Sea Lion Tan', unlockLevel: 3 }, { id: 'fish_polkadot', name: 'Polkadot Party', unlockLevel: 4 }, { id: 'fish_shark_grey', name: 'Shark Grey', unlockLevel: 5 }, { id: 'fish_inky_black', name: 'Inky Black', unlockLevel: 6 }, { id: 'fish_orca_mono', name: 'Orca Monochrome', unlockLevel: 7 }, { id: 'fish_bioluminescent', name: 'Bioluminescent', unlockLevel: 8 }, ];
@@ -118,62 +90,38 @@ window.addEventListener('DOMContentLoaded', () => {
     const ABYSSAL_LEVEL_INDEX = 8;
     const player = { x: 100, y: 250, width: 60, height: 60, dy: 0, currentSkin: 'fish_default', name: 'player', 
         draw() { 
-            const img = imageObjects[this.currentSkin]; if (!img || !img.complete || !ctx) return; 
-            ctx.save(); 
-            ctx.imageSmoothingEnabled = true; // --- CHANGE: Enabled smoothing ---
+            const img = imageObjects[this.currentSkin]; if (!img || !img.complete || !ctx) return; ctx.save(); ctx.imageSmoothingEnabled = true; 
+            // --- CHANGE: Flashing effect when resuming ---
+            if (gameState === 'resuming' && Math.floor(frame / 5) % 2 === 0) { ctx.globalAlpha = 0.5; }
             const isBioluminescent = this.currentSkin === 'fish_bioluminescent'; const inAbyssalZone = currentLevelIndex === ABYSSAL_LEVEL_INDEX; if (isBioluminescent || inAbyssalZone) { ctx.shadowColor = isBioluminescent ? '#00ffff' : '#ffffff'; ctx.shadowBlur = isBioluminescent ? 20 : 10; } 
             ctx.translate(this.x + this.width / 2, this.y + this.height / 2); 
             if (gameState === 'dying') { ctx.rotate(Math.PI); } else { ctx.rotate(this.dy * 0.05); } 
             ctx.drawImage(img, -this.width / 2, -this.height / 2, this.width, this.height); 
             ctx.restore(); 
         }, 
-        update() { this.dy += gameConfig.gravity; this.y += this.dy; const levelHasIcebergs = LEVELS[currentLevelIndex].topObstacleTypes?.length > 0; if (this.y < gameConfig.topBoundary && levelHasIcebergs) { this.y = gameConfig.topBoundary; this.dy = 0; if (gameState === 'playing') handlePlayerHit(); } if (this.y + this.height > gameConfig.bottomBoundary) { this.y = gameConfig.bottomBoundary - this.height; this.dy = 0; if (gameState === 'playing') handlePlayerHit(); } }, 
-        flap() { if (this.y > gameConfig.topBoundary) { this.dy = gameConfig.lift; } } 
+        update() { 
+            // --- CHANGE: Gravity is disabled during the 'resuming' state ---
+            if (gameState !== 'resuming') { this.dy += gameConfig.gravity; }
+            this.y += this.dy; 
+            const levelHasIcebergs = LEVELS[currentLevelIndex].topObstacleTypes?.length > 0; if (this.y < gameConfig.topBoundary && levelHasIcebergs) { this.y = gameConfig.topBoundary; this.dy = 0; if (gameState === 'playing') handlePlayerHit(); } if (this.y + this.height > gameConfig.bottomBoundary) { this.y = gameConfig.bottomBoundary - this.height; this.dy = 0; if (gameState === 'playing') handlePlayerHit(); } }, 
+        flap() { if (this.y > gameConfig.topBoundary && gameState === 'playing') { this.dy = gameConfig.lift; } } 
     };
-    class Obstacle { constructor() { const level = LEVELS[currentLevelIndex]; this.image = imageObjects[level.obstacleImg]; this.gap = level.gap; this.topPipeHeight = Math.random() * (canvas.height / 2.5 - 50) + 50; this.bottomPipeHeight = canvas.height - this.topPipeHeight - this.gap; this.x = canvas.width; this.width = level.obstacleWidth; this.counted = false; let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; this.speed = gameConfig.gameSpeed * level.speedMultiplier * speedBoost; this.movement = level.movement; this.vy = (Math.random() - 0.5) * 2; this.jetFrame = 0; this.name = level.obstacleImg; } update() { this.x -= this.speed; if (this.movement === 'bobbing') { this.topPipeHeight += this.vy; if (this.topPipeHeight < 50 || this.topPipeHeight > (canvas.height - this.gap - 100)) { this.vy *= -1; } this.bottomPipeHeight = canvas.height - this.topPipeHeight - this.gap; } else if (this.movement === 'jetting') { this.jetFrame++; let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; if (this.jetFrame % 90 === 0) { this.speed = gameConfig.gameSpeed * LEVELS[currentLevelIndex].speedMultiplier * speedBoost * 3; } else if (this.jetFrame % 90 === 30) { this.speed = gameConfig.gameSpeed * LEVELS[currentLevelIndex].speedMultiplier * speedBoost * 0.5; } } } 
-        draw() { 
-            if (this.image && this.image.complete) { 
-                ctx.save(); 
-                ctx.imageSmoothingEnabled = true; // --- CHANGE: Enabled smoothing ---
-                const isLanternFish = currentLevelIndex === ABYSSAL_LEVEL_INDEX; if (isLanternFish) { ctx.shadowColor = '#ffff00'; ctx.shadowBlur = 15; } 
-                const imgHeight = (this.width / this.image.width) * this.image.height; 
-                this.topPipe = { x: this.x, y: 0, width: this.width, height: this.topPipeHeight }; this.bottomPipe = { x: this.x, y: canvas.height - this.bottomPipeHeight, width: this.width, height: this.bottomPipeHeight }; 
-                ctx.drawImage(this.image, this.x, this.topPipeHeight - imgHeight, this.width, imgHeight); 
-                ctx.drawImage(this.image, this.x, canvas.height - this.bottomPipeHeight, this.width, imgHeight); 
-                ctx.restore(); 
-            } 
-        } 
-    }
-    class FreeFloatingObstacle { constructor(image, width, height) { this.image = image; this.x = canvas.width + Math.random() * canvas.width; this.y = Math.random() * (gameConfig.bottomBoundary - 100); this.width = 80; this.height = 80; this.speed = gameConfig.gameSpeed * 0.7; this.vy = (Math.random() - 0.5) * 2; this.vx = (Math.random() - 0.5) * 0.5; this.name = 'jellyfish'; } update() { let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; this.x -= this.speed * speedBoost; this.x += this.vx; this.y += this.vy; if (this.y < 50 || this.y > gameConfig.bottomBoundary - this.height - 50) { this.vy *= -1; } } 
-        draw() { 
-            if (this.image && this.image.complete) { 
-                ctx.imageSmoothingEnabled = true; // --- CHANGE: Enabled smoothing ---
-                ctx.drawImage(this.image, this.x, this.y, this.width, this.height); 
-            } 
-        } 
-    }
-    class StaticEnvironmentObstacle { constructor(imageKey, isTop) { this.image = imageObjects[imageKey]; this.width = 125; this.height = 125; this.x = canvas.width + Math.random() * 200; this.isTop = isTop; if (isTop) { this.y = gameConfig.topBoundary - this.height / 1.5; } else { this.y = canvas.height - this.height; } let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; this.speed = gameConfig.gameSpeed * 1.2 * speedBoost; this.name = isTop ? 'iceberg' : 'rock'; } update() { this.x -= this.speed; } 
-        draw() { 
-            if (this.image && this.image.complete) { 
-                ctx.imageSmoothingEnabled = true; // --- CHANGE: Enabled smoothing ---
-                ctx.drawImage(this.image, this.x, this.y, this.width, this.height); 
-            } 
-        } 
-    }
-
+    class Obstacle { constructor() { const level = LEVELS[currentLevelIndex]; this.image = imageObjects[level.obstacleImg]; this.gap = level.gap; this.topPipeHeight = Math.random() * (canvas.height / 2.5 - 50) + 50; this.bottomPipeHeight = canvas.height - this.topPipeHeight - this.gap; this.x = canvas.width; this.width = level.obstacleWidth; this.counted = false; let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; this.speed = gameConfig.gameSpeed * level.speedMultiplier * speedBoost; this.movement = level.movement; this.vy = (Math.random() - 0.5) * 2; this.jetFrame = 0; this.name = level.obstacleImg; } update() { this.x -= this.speed; if (this.movement === 'bobbing') { this.topPipeHeight += this.vy; if (this.topPipeHeight < 50 || this.topPipeHeight > (canvas.height - this.gap - 100)) { this.vy *= -1; } this.bottomPipeHeight = canvas.height - this.topPipeHeight - this.gap; } else if (this.movement === 'jetting') { this.jetFrame++; let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; if (this.jetFrame % 90 === 0) { this.speed = gameConfig.gameSpeed * LEVELS[currentLevelIndex].speedMultiplier * speedBoost * 3; } else if (this.jetFrame % 90 === 30) { this.speed = gameConfig.gameSpeed * LEVELS[currentLevelIndex].speedMultiplier * speedBoost * 0.5; } } } draw() { if (this.image && this.image.complete) { ctx.save(); ctx.imageSmoothingEnabled = true; const isLanternFish = currentLevelIndex === ABYSSAL_LEVEL_INDEX; if (isLanternFish) { ctx.shadowColor = '#ffff00'; ctx.shadowBlur = 15; } const imgHeight = (this.width / this.image.width) * this.image.height; this.topPipe = { x: this.x, y: 0, width: this.width, height: this.topPipeHeight }; this.bottomPipe = { x: this.x, y: canvas.height - this.bottomPipeHeight, width: this.width, height: this.bottomPipeHeight }; ctx.drawImage(this.image, this.x, this.topPipeHeight - imgHeight, this.width, imgHeight); ctx.drawImage(this.image, this.x, canvas.height - this.bottomPipeHeight, this.width, imgHeight); ctx.restore(); } } }
+    class FreeFloatingObstacle { constructor(image, width, height) { this.image = image; this.x = canvas.width + Math.random() * canvas.width; this.y = Math.random() * (gameConfig.bottomBoundary - 100); this.width = 80; this.height = 80; this.speed = gameConfig.gameSpeed * 0.7; this.vy = (Math.random() - 0.5) * 2; this.vx = (Math.random() - 0.5) * 0.5; this.name = 'jellyfish'; } update() { let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; this.x -= this.speed * speedBoost; this.x += this.vx; this.y += this.vy; if (this.y < 50 || this.y > gameConfig.bottomBoundary - this.height - 50) { this.vy *= -1; } } draw() { if (this.image && this.image.complete) { ctx.imageSmoothingEnabled = true; ctx.drawImage(this.image, this.x, this.y, this.width, this.height); } } }
+    class StaticEnvironmentObstacle { constructor(imageKey, isTop) { this.image = imageObjects[imageKey]; this.width = 125; this.height = 125; this.x = canvas.width + Math.random() * 200; this.isTop = isTop; if (isTop) { this.y = gameConfig.topBoundary - this.height / 1.5; } else { this.y = canvas.height - this.height; } let speedBoost = vortexMode ? gameConfig.vortexSpeedMultiplier : 1; this.speed = gameConfig.gameSpeed * 1.2 * speedBoost; this.name = isTop ? 'iceberg' : 'rock'; } update() { this.x -= this.speed; } draw() { if (this.image && this.image.complete) { ctx.imageSmoothingEnabled = true; ctx.drawImage(this.image, this.x, this.y, this.width, this.height); } } }
     function drawBackgroundExtras() { const level = LEVELS[currentLevelIndex]; if (level.floorObstacleTypes && level.floorObstacleTypes.length > 0) { ctx.fillStyle = '#C2B280'; ctx.fillRect(0, gameConfig.bottomBoundary, canvas.width, gameConfig.sandyBottomHeight); } }
     function handleAllObstacles() { const level = LEVELS[currentLevelIndex]; if (level.obstacleScore && frame % 100 === 0) { obstaclesArray.unshift(new Obstacle()); } if (level.survivalScore && frame % 30 === 0 && jellyfishArray.length < 10) { jellyfishArray.push(new FreeFloatingObstacle(imageObjects.jellyfish, 64, 64)); } if (level.floorObstacleTypes && frame % 150 === 0) { const rockType = level.floorObstacleTypes[Math.floor(Math.random() * level.floorObstacleTypes.length)]; rockArray.push(new StaticEnvironmentObstacle(rockType, false)); } if (level.topObstacleTypes && frame % 180 === 0) { const icebergType = level.topObstacleTypes[Math.floor(Math.random() * level.topObstacleTypes.length)]; icebergArray.push(new StaticEnvironmentObstacle(icebergType, true)); } [...obstaclesArray, ...jellyfishArray, ...rockArray, ...icebergArray].forEach(o => o.update()); obstaclesArray = obstaclesArray.filter(o => o.x > -o.width); jellyfishArray = jellyfishArray.filter(j => j.x > -j.width); rockArray = rockArray.filter(r => r.x > -r.width); icebergArray = icebergArray.filter(i => i.x > -i.width); }
     function detectCollision(objA, objB) { const hitboxA = HITBOXES[objA.name] || { w: 1, h: 1 }; const hitboxB = HITBOXES[objB.name] || { w: 1, h: 1 }; const wA = objA.width * hitboxA.w; const hA = objA.height * hitboxA.h; const xA = objA.x + (objA.width - wA) / 2; const yA = objA.y + (objA.height - hA) / 2; const wB = objB.width * hitboxB.w; const hB = objB.height * hitboxB.h; const xB = objB.x + (objB.width - wB) / 2; const yB = objB.y + (objB.height - hB) / 2; return xA < xB + wB && xA + wA > xB && yA < yB + hB && yA + hA > yB; }
     function handleCollisions() { for (const o of obstaclesArray) { const topPipeHit = detectCollision(player, { ...o.topPipe, name: o.name }); const bottomPipeHit = detectCollision(player, { ...o.bottomPipe, name: o.name }); if (topPipeHit || bottomPipeHit) { handlePlayerHit(); return; } } for (const obs of [...jellyfishArray, ...rockArray, ...icebergArray]) { if (detectCollision(player, obs)) { handlePlayerHit(); return; } } }
     function handleScoring() { const level = LEVELS[currentLevelIndex]; if (level.obstacleScore) { obstaclesArray.forEach(o => { if (!o.counted && o.x + o.width < player.x) { score += level.obstacleScore; o.counted = true; const gapCenter = o.topPipeHeight + o.gap / 2; if (Math.abs((player.y + player.height / 2) - gapCenter) < gameConfig.perfectPassTolerance) { score += 50; perfectPassText.style.opacity = 1; setTimeout(() => { perfectPassText.style.opacity = 0; }, 1000); } } }); } }
     function handleLevelChange() { if (!vortexMode && survivalTime >= TOTAL_CYCLE_TIME) { vortexMode = true; console.log("VORTEX MODE!"); } let effectiveTime = vortexMode ? (survivalTime % TOTAL_CYCLE_TIME) : survivalTime; let cumulativeDuration = 0; let newLevelIndex = 0; for (let i = 0; i < LEVELS.length; i++) { if (effectiveTime < cumulativeDuration + LEVELS[i].duration) { newLevelIndex = i; break; } cumulativeDuration += LEVELS[i].duration; } if (newLevelIndex !== currentLevelIndex) { stopIntervals(); cancelAnimationFrame(animationFrameId); currentLevelIndex = newLevelIndex; dashboardLevelName.textContent = LEVELS[currentLevelIndex].name; if (!vortexMode) unlockSkinForLevel(currentLevelIndex); showLevelStartScreen(); } else { const progressInLevel = (effectiveTime - cumulativeDuration) / LEVELS[newLevelIndex].duration * 100; progressBar.style.width = `${Math.min(progressInLevel, 100)}%`; gameContainer.style.background = LEVELS[newLevelIndex].bgColor; } }
-    function animate() { if (gameState === 'level-start' || gameState === 'life-lost' || gameState === 'game-over' || gameState === 'menu') return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawBackgroundExtras(); if (gameState === 'playing') { handleAllObstacles(); handleCollisions(); handleScoring(); handleLevelChange(); } [...obstaclesArray, ...jellyfishArray, ...rockArray, ...icebergArray].forEach(o => o.draw()); player.update(); player.draw(); scoreDisplay.textContent = Math.floor(score); if (gameState === 'playing') { if (frame % 60 === 0) survivalTime++; frame++; } animationFrameId = requestAnimationFrame(animate); }
+    function animate() { if (gameState === 'level-start' || gameState === 'life-lost' || gameState === 'game-over' || gameState === 'menu') return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawBackgroundExtras(); if (gameState === 'playing' || gameState === 'resuming') { handleAllObstacles(); if (gameState === 'playing') { handleCollisions(); handleScoring(); handleLevelChange(); } } [...obstaclesArray, ...jellyfishArray, ...rockArray, ...icebergArray].forEach(o => o.draw()); player.update(); player.draw(); scoreDisplay.textContent = Math.floor(score); frame++; animationFrameId = requestAnimationFrame(animate); }
     function beginLevel() { levelStartScreen.style.display = 'none'; dashboard.style.display = 'flex'; gameState = 'playing'; startIntervals(); animate(); }
     function handlePlayerHit() { if (gameState !== 'playing') return; gameState = 'dying'; stopIntervals(); setTimeout(() => { lives--; updateLivesDisplay(); cancelAnimationFrame(animationFrameId); if (lives > 0) { gameState = 'life-lost'; livesRemainingDisplay.textContent = `${lives} ${lives > 1 ? 'Lives' : 'Life'} Remaining`; lifeLostScreen.style.display = 'flex'; } else { handleGameOver(); } }, 1000); }
-    function continueGame() { lifeLostScreen.style.display = 'none'; player.y = 250; player.dy = 0; obstaclesArray = obstaclesArray.filter(o => o.x > player.x + 150); jellyfishArray = jellyfishArray.filter(j => j.x > player.x + 150); gameState = 'playing'; startIntervals(); animate(); }
+    function continueGame() { lifeLostScreen.style.display = 'none'; player.y = 250; player.dy = 0; obstaclesArray = obstaclesArray.filter(o => o.x > player.x + 150); jellyfishArray = jellyfishArray.filter(j => j.x > player.x + 150); gameState = 'resuming'; animate(); setTimeout(() => { gameState = 'playing'; startIntervals(); if (survivalTime === 0) { survivalTime = 1; } }, 1000); }
     function handleGameOver() { gameState = 'game-over'; if (score > bestScore) { bestScore = score; localStorage.setItem('floatyFishBestScore', bestScore); } finalScoreDisplay.textContent = `SCORE: ${Math.floor(score)}`; bestScoreDisplay.textContent = `BEST: ${Math.floor(bestScore)}`; dashboard.style.display = 'none'; gameOverScreen.style.display = 'flex'; }
     function updateLivesDisplay() { livesDisplay.innerHTML = ''; const fishIconSrc = imageObjects[player.currentSkin]?.src; if (!fishIconSrc) return; for (let i = 0; i < lives; i++) { const lifeImg = document.createElement('img'); lifeImg.src = fishIconSrc; lifeImg.alt = 'Life'; livesDisplay.appendChild(lifeImg); } }
-    function startIntervals() { if (survivalScoreInterval) clearInterval(survivalScoreInterval); survivalScoreInterval = setInterval(() => { if (gameState === 'playing') { const level = LEVELS[currentLevelIndex]; score += level.survivalScore ? (level.survivalScore / 10) : 1; } }, 100); }
+    function startIntervals() { if (survivalScoreInterval) clearInterval(survivalScoreInterval); survivalScoreInterval = setInterval(() => { if (gameState === 'playing') { const level = LEVELS[currentLevelIndex]; score += level.survivalScore ? (level.survivalScore / 10) : 1; if (frame % 60 === 0) survivalTime++; } }, 1000 / 60); }
     function stopIntervals() { clearInterval(survivalScoreInterval); }
     function resetForNewGame() { score = 0; frame = 0; survivalTime = 0; currentLevelIndex = 0; vortexMode = false; resetPerLevel(); }
     function resetPerLevel() { player.y = 250; player.dy = 0; obstaclesArray = []; jellyfishArray = []; rockArray = []; icebergArray = []; lives = 3; stopIntervals(); scoreDisplay.textContent = Math.floor(score); progressBar.style.width = '0%'; gameOverScreen.style.display = 'none'; lifeLostScreen.style.display = 'none'; }
